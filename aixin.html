@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>爱心温馨提示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        .tip-box {
+            position: absolute;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-family: "PingFang SC", "微软雅黑", sans-serif;
+            font-size: 15px;
+            color: #333;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+            opacity: 0; /* 初始隐藏 */
+        }
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <div class="footer">准备中...</div>
+
+    <script>
+        const allTips = [];
+        let isClosing = false;
+
+        // 生成爱心坐标点
+        function generateHeartPoints(numPoints = 80) {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const t = (i / numPoints) * 2 * Math.PI;
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                points.push({ x, y });
+            }
+            return points;
+        }
+
+        // 温馨提示文本
+        const tips = [
+            '多喝水哦~', '保持微笑呀', '每天都要元气满满',
+            '记得吃水果', '保持好心情', '好好爱自己', '我想你了',
+            '梦想成真', '期待下一次见面', '金榜题名',
+            '顺顺利利', '早点休息', '愿所有烦恼都消失',
+            '别熬夜', '今天过得开心嘛', '天冷了，多穿衣服',
+            '你很棒', '加油呀', '永远爱你', '你是最好的',
+            '陪你一起走', '感谢有你', '珍惜当下'
+        ];
+
+        // 背景颜色
+        const bgColors = [
+            '#FFE4E1', '#FFB6C1', '#FFC0CB', '#FFDAB9',
+            '#F0E68C', '#98FB98', '#87CEFA', '#E6E6FA',
+            '#DDA0DD', '#FFA07A', '#98FB98', '#87CEEB'
+        ];
+
+        // 初始化函数
+        function init() {
+            const points = generateHeartPoints(80);
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const scale = Math.min(screenWidth, screenHeight) / 50;
+            const offsetY = -screenHeight * 0.1;
+            const totalPoints = points.length;
+
+            // 显示速度：原间隔80ms → 减慢0.05秒（50ms）→ 130ms
+            points.forEach((point, index) => {
+                setTimeout(() => {
+                    const tipBox = createTipBox(point.x, point.y);
+                    allTips.push(tipBox);
+
+                    if (index === totalPoints - 1) {
+                        document.querySelector('.footer').innerText = '所有提示已显示，准备依次关闭...';
+                        setTimeout(startClosing, 1000); // 等待1秒后开始关闭
+                    }
+                }, index * 130); // 关键：显示间隔从80ms改为130ms（慢0.05秒）
+            });
+
+            // 创建单个提示框（显示动画延长至0.7秒，更慢）
+            function createTipBox(x, y) {
+                const tipBox = document.createElement('div');
+                tipBox.className = 'tip-box';
+                const left = (screenWidth / 2) + (x * scale) - 100;
+                const top = (screenHeight / 2) + (y * scale) + offsetY - 30;
+                tipBox.style.left = `${left}px`;
+                tipBox.style.top = `${top}px`;
+                tipBox.style.backgroundColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+                tipBox.innerText = tips[Math.floor(Math.random() * tips.length)];
+                document.body.appendChild(tipBox);
+
+                // 显示动画：原0.5秒 → 0.7秒（更慢）
+                setTimeout(() => {
+                    tipBox.style.transition = 'opacity 0.7s, transform 0.7s'; // 动画时长增加
+                    tipBox.style.opacity = '1';
+                    tipBox.style.transform = 'scale(1)';
+                }, 10);
+
+                return tipBox;
+            }
+
+            // 消失速度：原间隔50ms → 减慢0.05秒（50ms）→ 100ms
+            function startClosing() {
+                if (isClosing) return;
+                isClosing = true;
+
+                allTips.forEach((tip, index) => {
+                    // 关键：消失间隔从50ms改为100ms（慢0.05秒）
+                    setTimeout(() => {
+                        tip.style.opacity = '0';
+                        tip.style.transform = 'scale(0.8)';
+                        // 消失动画时长延长至0.7秒
+                        setTimeout(() => tip.remove(), 700);
+
+                        if (index === allTips.length - 1) {
+                            document.querySelector('.footer').innerText = '所有提示已关闭 ❤️';
+                        }
+                    }, index * 100);
+                });
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
